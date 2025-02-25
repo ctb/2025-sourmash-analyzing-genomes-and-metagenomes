@@ -11,6 +11,8 @@ rule all:
         expand("sketches/{acc}_{src}.sig.zip", acc=ACCS, src=SOURCES),
         expand("outputs/{acc}_{src}.x.gtdb-rs220.gather.csv",
                acc=ACCS, src=SOURCES),
+        expand("outputs/{acc}_{src}.x.gtdb-rs220.gather.with-lineages.csv",
+               acc=ACCS, src=SOURCES),
 
 rule sketch_reads:
     input:
@@ -53,4 +55,14 @@ rule gather_gtdb:
     shell: """
         sourmash scripts fastgather {input.q} {input.db} \
             -o {output} -k 31 -s 1000 -t 0 -c {threads}
+    """
+
+rule annotate_gtdb:
+    input:
+        g="outputs/{sketch}.x.gtdb-rs220.gather.csv",
+        lindb="/group/ctbrowngrp5/sourmash-db/gtdb-rs220/gtdb-rs220.lineages.csv",
+    output:
+        "outputs/{sketch}.x.gtdb-rs220.gather.with-lineages.csv",
+    shell: """
+        sourmash tax annotate -g {input.g} -t {input.lindb} --output-dir outputs/
     """
